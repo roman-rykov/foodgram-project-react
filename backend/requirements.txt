@@ -27,8 +27,11 @@ defusedxml==0.7.1
 django==3.2.4
     # via
     #   -r requirements.in
+    #   django-filter
     #   djangorestframework
     #   djangorestframework-simplejwt
+django-filter==2.4.0
+    # via -r requirements.in
 django-templated-mail==1.1.1
     # via djoser
 djangorestframework==3.12.4
