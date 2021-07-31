@@ -6,4 +6,4 @@ from .models import CustomUser
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
-    pass
+    UserAdmin.fieldsets += ('Subscriptions', {'fields': ('subscriptions', )}),  # TODO: make usable subcriptions admin

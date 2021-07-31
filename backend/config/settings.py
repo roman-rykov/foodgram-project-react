@@ -57,6 +57,16 @@ MIDDLEWARE = [
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
+DJOSER = {
+    'SERIALIZERS': {
+        'user': 'users.serializers.CustomUserSerializer',
+    },
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.AllowAny'],
+    },
+    'HIDE_USERS': False,
+}
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
