@@ -55,6 +55,7 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         to=User,
         on_delete=models.CASCADE,
+        related_name='recipes',
         verbose_name='автор',
     )
     name = models.CharField(
@@ -114,11 +115,13 @@ class FavoriteRecipe(models.Model):
     user = models.ForeignKey(
         to=User,
         on_delete=models.CASCADE,
+        related_name='favorite_recipes',
         verbose_name='пользователь',
     )
     recipe = models.ForeignKey(
         to=Recipe,
         on_delete=models.CASCADE,
+        related_name='favorited_by',
         verbose_name='рецепт',
     )
 
@@ -129,4 +132,4 @@ class FavoriteRecipe(models.Model):
         )]
 
     def __str__(self) -> str:
-        return f'{self.recipe} in the favorites of {self.user}'
+        return f'{self.recipe} favorited by {self.user}'
