@@ -23,6 +23,9 @@ class RecipeFilter(rest_framework.FilterSet):
         to_field_name='slug',
     )
     is_favorited = django_filters.BooleanFilter(label='Is favorited')
+    is_in_shopping_cart = django_filters.BooleanFilter(
+        label='Is in shopping cart',
+    )
 
 
 class IngredientFilter(rest_framework.FilterSet):

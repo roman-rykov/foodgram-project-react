@@ -15,10 +15,12 @@ from .models import (
     Tag,
 )
 from .serializers import (
+    BaseRecipeSerializer,
     FavoriteRecipeSerializer,
     IngredientSerializer,
     RecipeCUDSerializer,
     RecipeSerializer,
+    ShoppingCartSerializer,
     TagSerializer,
 )
 
@@ -73,6 +75,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     ),
                     default=False,
                 ),
+                is_in_shopping_cart=Case(  # Get favorite status
+                    When(
+                        pk__in=user.shopping_cart.values('pk'),
+                        then=True,
+                    ),
+                    default=False,
+                ),
             )
         else:
             queryset = queryset.select_related('author')
@@ -81,21 +90,40 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == 'favorite':
             return FavoriteRecipeSerializer
+        if self.action == 'shopping_cart':
+            return ShoppingCartSerializer
         if self.request.method not in permissions.SAFE_METHODS:
             return RecipeCUDSerializer
         return RecipeSerializer
+
+    def add_recipe_relation(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(data={'recipe': instance.pk})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            data=BaseRecipeSerializer(instance).data,
+            status=status.HTTP_201_CREATED
+        )
 
     @action(methods=['get'],
             detail=True,
             permission_classes=[permissions.IsAuthenticated])
     def favorite(self, request, *args, **kwargs):
-        data = {'recipe': self.get_object().pk}
-        serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return self.add_recipe_relation(request, *args, **kwargs)
 
     @favorite.mapping.delete
-    def delete_from_favorites(self, request, *args, **kwargs):
-        self.get_object().favorited_by.remove(request.user)
+    def remove_from_favorites(self, request, *args, **kwargs):
+        request.user.favorite_recipes.remove(self.get_object())
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=['get'],
+            detail=True,
+            permission_classes=[permissions.IsAuthenticated])
+    def shopping_cart(self, request, *args, **kwargs):
+        return self.add_recipe_relation(request, *args, **kwargs)
+
+    @shopping_cart.mapping.delete
+    def remove_from_shopping_cart(self, request, *args, **kwargs):
+        request.user.shopping_cart.remove(self.get_object())
         return Response(status=status.HTTP_204_NO_CONTENT)

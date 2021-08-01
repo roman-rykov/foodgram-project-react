@@ -82,6 +82,11 @@ class Recipe(models.Model):
         related_name='favorite_recipes',
         through='FavoriteRecipe',
     )
+    shopped_by = models.ManyToManyField(
+        to=User,
+        related_name='shopping_cart',
+        through='ShoppingCart',
+    )
 
     class Meta:
         verbose_name = 'рецепт'
@@ -124,4 +129,15 @@ class FavoriteRecipe(models.Model):
         constraints = [models.constraints.UniqueConstraint(
             fields=('user', 'recipe'),
             name='the recipe is already in this user\'s favorites',
+        )]
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(to=Recipe, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [models.constraints.UniqueConstraint(
+            fields=('user', 'recipe'),
+            name='the recipe is already in this user\'s shopping cart',
         )]

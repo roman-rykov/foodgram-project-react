@@ -8,6 +8,7 @@ from .models import (
     Ingredient,
     Recipe,
     RecipeIngredient,
+    ShoppingCart,
     Tag,
 )
 
@@ -53,10 +54,11 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True)
     author = settings.SERIALIZERS.user(read_only=True)
     is_favorited = serializers.BooleanField(read_only=True)
+    is_in_shopping_cart = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Recipe
-        exclude = ('favorited_by', )
+        exclude = ('favorited_by', 'shopped_by')
 
 
 class RecipeCUDSerializer(RecipeSerializer):
@@ -100,13 +102,6 @@ class FavoriteRecipeSerializer(serializers.ModelSerializer):
         queryset=Recipe.objects.all(),
         write_only=True,
     )
-    id = serializers.IntegerField(source='recipe.id', required=False)
-    name = serializers.CharField(source='recipe.name', required=False)
-    image = serializers.ImageField(source='recipe.image', required=False)
-    cooking_time = serializers.IntegerField(
-        source='recipe.cooking_time',
-        required=False,
-    )
 
     class Meta:
         model = FavoriteRecipe
@@ -114,7 +109,32 @@ class FavoriteRecipeSerializer(serializers.ModelSerializer):
         validators = [
             validators.UniqueTogetherValidator(
                 FavoriteRecipe.objects.all(),
-                fields=['user', 'recipe'],
+                fields=('user', 'recipe'),
                 message='recipe already in favorites',
             )
         ]
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=Recipe.objects.all(),
+        write_only=True,
+    )
+
+    class Meta:
+        model = ShoppingCart
+        fields = '__all__'
+        validators = [
+            validators.UniqueTogetherValidator(
+                ShoppingCart.objects.all(),
+                fields=('user', 'recipe'),
+                message='recipe already in shopping cart',
+            )
+        ]
+
+
+class BaseRecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
