@@ -6,6 +6,8 @@ from rest_framework import pagination, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from .serializers import UserRecipesSerializer
+
 
 class CustomUserViewSet(UserViewSet):
     pagination_class = pagination.PageNumberPagination
@@ -21,7 +23,14 @@ class CustomUserViewSet(UserViewSet):
                 default=False,
             ),
         )
+        if self.action == 'subscriptions':
+            queryset = queryset.prefetch_related('recipes')
         return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'subscriptions':
+            return UserRecipesSerializer
+        return super().get_serializer_class()
 
     @action(methods=['get'],
             detail=False,
