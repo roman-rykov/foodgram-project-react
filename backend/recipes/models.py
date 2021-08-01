@@ -77,6 +77,11 @@ class Recipe(models.Model):
     cooking_time = models.PositiveIntegerField(
         verbose_name='время приготовления',
     )
+    favorited_by = models.ManyToManyField(
+        to=User,
+        related_name='favorite_recipes',
+        through='FavoriteRecipe',
+    )
 
     class Meta:
         verbose_name = 'рецепт'
@@ -112,24 +117,11 @@ class RecipeIngredient(models.Model):
 
 
 class FavoriteRecipe(models.Model):
-    user = models.ForeignKey(
-        to=User,
-        on_delete=models.CASCADE,
-        related_name='favorite_recipes',
-        verbose_name='пользователь',
-    )
-    recipe = models.ForeignKey(
-        to=Recipe,
-        on_delete=models.CASCADE,
-        related_name='favorited_by',
-        verbose_name='рецепт',
-    )
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(to=Recipe, on_delete=models.CASCADE)
 
     class Meta:
         constraints = [models.constraints.UniqueConstraint(
             fields=('user', 'recipe'),
-            name='one record in favorites per recipe for each user',
+            name='the recipe is already in this user\'s favorites',
         )]
-
-    def __str__(self) -> str:
-        return f'{self.recipe} favorited by {self.user}'

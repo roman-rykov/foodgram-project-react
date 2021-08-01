@@ -34,4 +34,4 @@ class RecipeAdmin(admin.ModelAdmin):
 @admin.register(FavoriteRecipe)
 class FavoriteRecipeAdmin(admin.ModelAdmin):
     list_display = ('user', 'recipe')
-    search_fields = ('user__username', 'recipe__name')
+    search_fields = ('user__username', 'user__email', 'recipe__name')

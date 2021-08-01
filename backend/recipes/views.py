@@ -5,12 +5,10 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import pagination, permissions, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from .filters import IngredientFilter, RecipeFilter
 from .models import (
-    FavoriteRecipe,
     Ingredient,
     Recipe,
     RecipeIngredient,
@@ -70,7 +68,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             ).annotate(
                 is_favorited=Case(  # Get favorite status
                     When(
-                        pk__in=user.favorite_recipes.values('recipe__pk'),
+                        pk__in=user.favorite_recipes.values('pk'),
                         then=True,
                     ),
                     default=False,
@@ -99,9 +97,5 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @favorite.mapping.delete
     def delete_from_favorites(self, request, *args, **kwargs):
-        get_object_or_404(
-            FavoriteRecipe.objects.all(),
-            recipe=self.get_object(),
-            user=request.user,
-        ).delete()
+        self.get_object().favorited_by.remove(request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
