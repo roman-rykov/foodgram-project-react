@@ -6,7 +6,7 @@ from rest_framework import pagination, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .serializers import UserRecipesSerializer
+from .serializers import SubscriptionSerializer, UserRecipesSerializer
 
 
 class CustomUserViewSet(UserViewSet):
@@ -19,7 +19,7 @@ class CustomUserViewSet(UserViewSet):
             return queryset
         queryset = queryset.annotate(
             is_subscribed=Case(
-                When(pk__in=user.subscriptions.all(), then=True),
+                When(pk__in=user.subscriptions.values('pk'), then=True),
                 default=False,
             ),
         )
@@ -30,6 +30,8 @@ class CustomUserViewSet(UserViewSet):
     def get_serializer_class(self):
         if self.action == 'subscriptions':
             return UserRecipesSerializer
+        if self.action == 'subscribe':
+            return SubscriptionSerializer
         return super().get_serializer_class()
 
     @action(methods=['get'],
@@ -50,13 +52,16 @@ class CustomUserViewSet(UserViewSet):
             detail=True,
             permission_classes=[permissions.IsAuthenticated])
     def subscribe(self, request, *args, **kwargs):
-        obj = self.get_object()
-        request.user.subscriptions.add(obj)
-        serializer = self.get_serializer(obj)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        instance = self.get_object()
+        serializer = self.get_serializer(data={'to_user': instance.pk})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            data=UserRecipesSerializer(instance).data,
+            status=status.HTTP_201_CREATED,
+        )
 
     @subscribe.mapping.delete
     def unsubscribe(self, request, *args, **kwargs):
-        obj = self.get_object()
-        request.user.subscriptions.remove(obj)
+        request.user.subscriptions.remove(self.get_object())
         return Response(status=status.HTTP_204_NO_CONTENT)

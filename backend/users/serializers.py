@@ -5,7 +5,11 @@ from djoser.serializers import UserSerializer
 
 from recipes.models import Recipe
 
-from rest_framework import serializers
+from rest_framework import serializers, validators
+from rest_framework.fields import CurrentUserDefault
+
+from .models import Subscription
+from .validators import UniqueValuesValidator
 
 User = get_user_model()
 
@@ -21,6 +25,29 @@ class CustomUserSerializer(UserSerializer):
             'is_subscribed',
         )
         read_only_fields = (settings.LOGIN_FIELD,)
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    from_user = serializers.HiddenField(default=CurrentUserDefault())
+    to_user = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        write_only=True,
+    )
+
+    class Meta:
+        model = Subscription
+        fields = '__all__'
+        validators = [
+            validators.UniqueTogetherValidator(
+                Subscription.objects.all(),
+                fields=('from_user', 'to_user'),
+                message='You are already subscribed to the user.',
+            ),
+            UniqueValuesValidator(
+                fields=('from_user', 'to_user'),
+                message='You cannot subscribe to yourself.',
+            ),
+        ]
 
 
 class BaseRecipeSerializer(serializers.ModelSerializer):
