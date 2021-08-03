@@ -14,6 +14,7 @@ from .models import (
     RecipeIngredient,
     Tag,
 )
+from .pagination import SizedPageNumberPagination
 from .permissions import IsAdmin, IsAuthenticated, IsAuthor, ReadOnly
 from .serializers import (
     BaseRecipeSerializer,
@@ -51,6 +52,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ),
     ).all()
     permission_classes = [ReadOnly | IsAuthor | IsAuthenticated | IsAdmin]
+    pagination_class = SizedPageNumberPagination
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
 

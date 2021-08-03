@@ -57,7 +57,7 @@ class BaseRecipeSerializer(serializers.ModelSerializer):
 
 
 class UserRecipesSerializer(CustomUserSerializer):
-    recipes = BaseRecipeSerializer(many=True, read_only=True)
+    recipes = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -68,3 +68,14 @@ class UserRecipesSerializer(CustomUserSerializer):
             'recipes',
         )
         read_only_fields = (settings.LOGIN_FIELD,)
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        queryset = obj.recipes.all()
+        recipes_limit = request.query_params.get('recipes_limit')
+        if recipes_limit:
+            try:
+                queryset = queryset[:int(recipes_limit)]
+            except ValueError:
+                pass
+        return BaseRecipeSerializer(queryset, many=True).data
