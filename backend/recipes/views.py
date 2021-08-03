@@ -14,6 +14,7 @@ from .models import (
     RecipeIngredient,
     Tag,
 )
+from .permissions import IsAdmin, IsAuthenticated, IsAuthor, ReadOnly
 from .serializers import (
     BaseRecipeSerializer,
     FavoriteRecipeSerializer,
@@ -30,7 +31,7 @@ User = get_user_model()
 class TagViewSet(viewsets.ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]  # TODO: Fix permissions
+    permission_classes = [ReadOnly | IsAdmin]
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
@@ -38,7 +39,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = IngredientFilter
-    permission_classes = [permissions.DjangoModelPermissionsOrAnonReadOnly]  # TODO: Fix permissions
+    permission_classes = [ReadOnly | IsAdmin]
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
@@ -49,7 +50,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             queryset=RecipeIngredient.objects.select_related('ingredient'),
         ),
     ).all()
-    pagination_class = pagination.PageNumberPagination  # TODO: Create new pagination class
+    permission_classes = [ReadOnly | IsAuthor | IsAuthenticated | IsAdmin]
     filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
 
