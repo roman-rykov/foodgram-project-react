@@ -1,6 +1,7 @@
 from djoser.conf import settings
 
 from rest_framework import serializers, validators
+from rest_framework.exceptions import ValidationError
 
 from .fields import Base64ImageField
 from .models import (
@@ -73,6 +74,12 @@ class RecipeCUDSerializer(RecipeSerializer):
     )
     image = Base64ImageField(help_text='base64-encoded image')
     author = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    def validate(self, attrs):
+        ingredients = [obj['id'] for obj in attrs['recipeingredient_set']]
+        if len(ingredients) > len(set(ingredients)):
+            raise ValidationError('Please remove duplicate ingredients.')
+        return attrs
 
     def update_ingredients(self, recipe, ingredients_data):
         recipe.recipeingredient_set.all().delete()
