@@ -5,7 +5,6 @@ from django.db import models
 from imagekit.models.fields import ProcessedImageField
 from imagekit.processors import ResizeToFill
 
-
 User = get_user_model()
 
 
@@ -18,7 +17,7 @@ class Tag(models.Model):
         verbose_name='цвет',
         max_length=7,
         default='#FFFFFF',
-        validators=[RegexValidator('^#(?:[0-9a-fA-F]{1,2}){3}$')],
+        validators=[RegexValidator('^#(?:[0-9a-fA-F]{3}){1,2}$')],
     )
     slug = models.SlugField(
         unique=True,

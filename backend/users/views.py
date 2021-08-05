@@ -2,15 +2,16 @@ from django.db.models import Case, When
 
 from djoser.views import UserViewSet
 
-from rest_framework import pagination, permissions, status
+from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from recipes.pagination import SizedPageNumberPagination
 from .serializers import SubscriptionSerializer, UserRecipesSerializer
 
 
 class CustomUserViewSet(UserViewSet):
-    pagination_class = pagination.PageNumberPagination
+    pagination_class = SizedPageNumberPagination
 
     def get_queryset(self):
         user = self.request.user

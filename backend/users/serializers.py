@@ -1,13 +1,12 @@
 from django.contrib.auth import get_user_model
 
-from djoser.conf import settings
+from djoser.conf import settings as djoser_settings
 from djoser.serializers import UserSerializer
-
-from recipes.models import Recipe
 
 from rest_framework import serializers, validators
 from rest_framework.fields import CurrentUserDefault
 
+from recipes.models import Recipe
 from .models import Subscription
 from .validators import UniqueValuesValidator
 
@@ -20,11 +19,11 @@ class CustomUserSerializer(UserSerializer):
     class Meta:
         model = User
         fields = tuple(User.REQUIRED_FIELDS) + (
-            settings.USER_ID_FIELD,
-            settings.LOGIN_FIELD,
+            djoser_settings.USER_ID_FIELD,
+            djoser_settings.LOGIN_FIELD,
             'is_subscribed',
         )
-        read_only_fields = (settings.LOGIN_FIELD,)
+        read_only_fields = (djoser_settings.LOGIN_FIELD,)
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
@@ -62,18 +61,18 @@ class UserRecipesSerializer(CustomUserSerializer):
     class Meta:
         model = User
         fields = tuple(User.REQUIRED_FIELDS) + (
-            settings.USER_ID_FIELD,
-            settings.LOGIN_FIELD,
+            djoser_settings.USER_ID_FIELD,
+            djoser_settings.LOGIN_FIELD,
             'is_subscribed',
             'recipes',
         )
-        read_only_fields = (settings.LOGIN_FIELD,)
+        read_only_fields = (djoser_settings.LOGIN_FIELD,)
 
     def get_recipes(self, obj):
         request = self.context.get('request')
         queryset = obj.recipes.all()
         recipes_limit = request.query_params.get('recipes_limit')
-        if recipes_limit:
+        if recipes_limit is not None:
             try:
                 queryset = queryset[:int(recipes_limit)]
             except ValueError:

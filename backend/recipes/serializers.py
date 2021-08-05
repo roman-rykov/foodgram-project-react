@@ -1,4 +1,4 @@
-from djoser.conf import settings
+from djoser.conf import settings as djoser_settings
 
 from rest_framework import serializers, validators
 from rest_framework.exceptions import ValidationError
@@ -53,7 +53,7 @@ class RecipeSerializer(serializers.ModelSerializer):
         many=True,
     )
     tags = TagSerializer(many=True)
-    author = settings.SERIALIZERS.user(read_only=True)
+    author = djoser_settings.SERIALIZERS.user(read_only=True)
     is_favorited = serializers.BooleanField(read_only=True)
     is_in_shopping_cart = serializers.BooleanField(read_only=True)
 

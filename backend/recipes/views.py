@@ -1,12 +1,11 @@
 from collections import Counter
 
-from django.contrib.auth import get_user_model
 from django.db.models import Case, Prefetch, When
 from django.http.response import HttpResponse
 
 from django_filters.rest_framework import DjangoFilterBackend
 
-from rest_framework import pagination, permissions, status, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -16,6 +15,7 @@ from .models import (
     Recipe,
     RecipeIngredient,
     Tag,
+    User,
 )
 from .pagination import SizedPageNumberPagination
 from .permissions import IsAdmin, IsAuthenticated, IsAuthor, ReadOnly
@@ -28,8 +28,6 @@ from .serializers import (
     ShoppingCartSerializer,
     TagSerializer,
 )
-
-User = get_user_model()
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -74,14 +72,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
                     ),
                 ),
             ).annotate(
-                is_favorited=Case(  # Get favorite status
+                is_favorited=Case(  # Fetch favorite status
                     When(
                         pk__in=user.favorite_recipes.values('pk'),
                         then=True,
                     ),
                     default=False,
                 ),
-                is_in_shopping_cart=Case(  # Get favorite status
+                is_in_shopping_cart=Case(  # Fetch shopping cart status
                     When(
                         pk__in=user.shopping_cart.values('pk'),
                         then=True,
@@ -109,7 +107,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         serializer.save()
         return Response(
             data=BaseRecipeSerializer(instance).data,
-            status=status.HTTP_201_CREATED
+            status=status.HTTP_201_CREATED,
         )
 
     @action(methods=['get'],
