@@ -1,5 +1,8 @@
+from collections import Counter
+
 from django.contrib.auth import get_user_model
 from django.db.models import Case, Prefetch, When
+from django.http.response import HttpResponse
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -130,3 +133,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def remove_from_shopping_cart(self, request, *args, **kwargs):
         request.user.shopping_cart.remove(self.get_object())
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=['get'],
+            detail=False,
+            permission_classes=[permissions.IsAuthenticated])
+    def download_shopping_cart(self, reqeust, *args, **kwargs):
+        queryset = self.get_queryset().filter(is_in_shopping_cart=True)
+        shopping_list, units = Counter(), dict()
+        for recipe in queryset:
+            for obj in recipe.recipeingredient_set.all():
+                shopping_list[obj.ingredient.name] += obj.amount
+                units[obj.ingredient.name] = obj.ingredient.measurement_unit
+        text = 'Ваш список покупок:\n'
+        for ingredient, amount in shopping_list.items():
+            text += f'{ingredient} {amount} {units[ingredient]}\n'
+        return HttpResponse(text, content_type='text/plain')
