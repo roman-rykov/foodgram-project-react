@@ -2,6 +2,9 @@ from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
 from django.db import models
 
+from imagekit.models.fields import ProcessedImageField
+from imagekit.processors import ResizeToFill
+
 
 User = get_user_model()
 
@@ -15,7 +18,8 @@ class Tag(models.Model):
         verbose_name='цвет',
         max_length=7,
         default='#FFFFFF',
-        validators=[RegexValidator('^#(?:[0-9a-fA-F]{1,2}){3}$')])
+        validators=[RegexValidator('^#(?:[0-9a-fA-F]{1,2}){3}$')],
+    )
     slug = models.SlugField(
         unique=True,
     )
@@ -62,9 +66,12 @@ class Recipe(models.Model):
         verbose_name='название',
         max_length=200,
     )
-    image = models.ImageField(
+    image = ProcessedImageField(
+        processors=[ResizeToFill(width=480, height=480)],
+        format='JPEG',
+        options={'quality': 76},
         verbose_name='изображение',
-        blank=True,
+        upload_to='recipes',
     )
     text = models.TextField(
         verbose_name='текст',
@@ -89,6 +96,7 @@ class Recipe(models.Model):
     )
 
     class Meta:
+        ordering = ['-pk']
         verbose_name = 'рецепт'
         verbose_name_plural = 'рецепты'
 

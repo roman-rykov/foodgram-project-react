@@ -14,9 +14,9 @@ class Base64ImageField(fields.ImageField):
         try:
             format, encoded_str = data.split(';base64,')
             decoded = base64.b64decode(encoded_str)
-        except (ValueError, binascii.Error):
+            extension = format.split('/')[-1]
+        except (AttributeError, ValueError, binascii.Error):
             raise ValidationError
-        extension = format.split('/')[-1]
         filename = str(uuid.uuid4()) + '.' + extension
         image_file = SimpleUploadedFile(name=filename, content=decoded)
         return super().to_internal_value(image_file)
