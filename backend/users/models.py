@@ -15,6 +15,14 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
+    def subscriptions_count(self):
+        return self.subscriptions.count()
+    subscriptions_count.short_description = 'подписок'
+
+    def subscribers_count(self):
+        return self.subscribers.count()
+    subscribers_count.short_description = 'подписчиков'
+
 
 class Subscription(models.Model):
     from_user = models.ForeignKey(

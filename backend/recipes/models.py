@@ -99,6 +99,10 @@ class Recipe(models.Model):
         verbose_name = 'рецепт'
         verbose_name_plural = 'рецепты'
 
+    def favorited_count(self):
+        return self.favorited_by.count()
+    favorited_count.short_description = 'в избранном'
+
     def __str__(self):
         return self.name
 

@@ -1,6 +1,5 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from django.db.models import Count
 
 from .models import CustomUser, Subscription
 
@@ -13,19 +12,10 @@ class CustomUserAdmin(UserAdmin):
     )
 
     def get_queryset(self, request):
-        queryset = super().get_queryset(request).annotate(
-            Count('subscriptions'), Count('subscribers'),
+        queryset = super().get_queryset(request).prefetch_related(
+            'subscriptions', 'subscribers',
         )
         return queryset
-
-    def subscriptions_count(self, obj):
-        return obj.subscriptions__count
-
-    def subscribers_count(self, obj):
-        return obj.subscribers__count
-
-    subscriptions_count.short_description = 'подписок'
-    subscribers_count.short_description = 'подписчиков'
 
 
 @admin.register(Subscription)
