@@ -51,6 +51,8 @@ factory-boy==3.2.0
     # via -r requirements.in
 faker==8.9.1
     # via factory-boy
+gunicorn==20.1.0
+    # via -r requirements.in
 idna==2.10
     # via requests
 itypes==1.2.0
@@ -105,3 +107,6 @@ uritemplate==3.0.1
     # via coreapi
 urllib3==1.26.6
     # via requests
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools
