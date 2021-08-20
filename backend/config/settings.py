@@ -16,7 +16,9 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', default=get_random_secret_key()
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    os.environ.get('HOST', default='localhost'),
+]
 
 
 # Application definition
@@ -94,7 +96,7 @@ REST_FRAMEWORK = {
 DATABASES = {
     'default': {
         'ENGINE': os.environ.get('DB_ENGINE', default='django.db.backends.postgresql'),
-        'HOST': os.environ.get('DB_HOST', default='localhost'),
+        'HOST': os.environ.get('DB_HOST', default='db'),
         'PORT': os.environ.get('DB_PORT', default='5432'),
         'NAME': os.environ.get('POSTGRES_DB', default='postgres'),
         'USER': os.environ.get('POSTGRES_USER', default='postgres'),
