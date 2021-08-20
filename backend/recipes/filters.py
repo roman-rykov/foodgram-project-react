@@ -8,7 +8,7 @@ from .models import Tag
 
 def individual_words_startswith(queryset, field, value):
     lookup = '__'.join([field, 'iregex'])
-    queryset = queryset.filter(**{lookup: r'\m' + re.escape(value)})  # works with PostgreSQL at least
+    queryset = queryset.filter(**{lookup: r'\m' + re.escape(value)})
     return queryset
 
 
