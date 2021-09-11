@@ -1,7 +1,7 @@
 from djoser.conf import settings as djoser_settings
 
 from rest_framework import serializers, validators
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import APIException
 
 from .fields import Base64ImageField
 from .models import (
@@ -40,11 +40,17 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 class RecipeIngredientCUDSerializer(RecipeIngredientSerializer):
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    amount = serializers.IntegerField(min_value=0)
+    amount = serializers.IntegerField()
 
     class Meta:
         model = RecipeIngredient
         fields = ('id', 'amount')
+
+    def validate(self, attrs):
+        amount = attrs['amount']
+        if amount < 0:
+            raise APIException('Количество не может быть меньше нуля')
+        return attrs
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -78,7 +84,9 @@ class RecipeCUDSerializer(RecipeSerializer):
     def validate(self, attrs):
         ingredients = [obj['id'] for obj in attrs['recipeingredient_set']]
         if len(ingredients) > len(set(ingredients)):
-            raise ValidationError('Please remove duplicate ingredients.')
+            raise serializers.ValidationError(
+                'Пожалуйста, уберите дублирующиеся ингредиенты.'
+            )
         return attrs
 
     def update_ingredients(self, recipe, ingredients_data):
