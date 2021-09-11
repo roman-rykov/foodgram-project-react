@@ -8,8 +8,8 @@ for obj in data:
     fixtures.append({
         'model': 'recipes.ingredient',
         'fields': {
-            'name': obj['title'],
-            'measurement_unit': obj['dimension'],
+            'name': obj['name'],
+            'measurement_unit': obj['measurement_unit'],
         }
     })
 
